@@ -3,28 +3,28 @@ from classes.sound_generator import SoundGenerator
 from classes.envelope import Envelope
 from classes.wave_generator import WaveGenerator, WaveTypes
 from classes.wave import Wave
-
-currentlyPlaying = {
-    KeyCode(char='a'): None,
-    KeyCode(char='s'): None,
-    KeyCode(char='d'): None,
-    KeyCode(char='f'): None,
-    KeyCode(char='g'): None,
-    KeyCode(char='h'): None,
-    KeyCode(char='j'): None,
-    KeyCode(char='k'): None,
-}
+from util import frequencyFromNote
 
 noteKeys = {
-    KeyCode(char='a'): 261.63,  # C4
-    KeyCode(char='s'): 293.665,  # D
-    KeyCode(char='d'): 329.628,  # E
-    KeyCode(char='f'): 349.228,  # F
-    KeyCode(char='g'): 391.995,  # G
-    KeyCode(char='h'): 440,  # A
-    KeyCode(char='j'): 493.883,  # B
-    KeyCode(char='k'): 523.25,  # C5
+    KeyCode(char='a'): frequencyFromNote("C4"),
+    KeyCode(char='w'): frequencyFromNote("C#4"),
+    KeyCode(char='s'): frequencyFromNote("D4"),
+    KeyCode(char='e'): frequencyFromNote("D#4"),
+    KeyCode(char='d'): frequencyFromNote("E4"),
+    KeyCode(char='f'): frequencyFromNote("F4"),
+    KeyCode(char='t'): frequencyFromNote("F#4"),
+    KeyCode(char='g'): frequencyFromNote("G4"),
+    KeyCode(char='y'): frequencyFromNote("G#4"),
+    KeyCode(char='h'): frequencyFromNote("A4"),
+    KeyCode(char='u'): frequencyFromNote("A#4"),
+    KeyCode(char='j'): frequencyFromNote("B4"),
+    KeyCode(char='k'): frequencyFromNote("C5"),
 }
+
+currentlyPlaying = {}
+for k, v in noteKeys.items():
+    currentlyPlaying[k] = None
+
 exit_key = Key.f7
 
 WAVEPRESET = [Wave(WaveTypes.SINE, 1, 1, 0),
@@ -64,5 +64,5 @@ def on_release(key):
 
 
 with Listener(on_press=on_press, on_release=on_release) as listener:
-    print('listener starts')
+    console.print("PySynth")
     listener.join()

@@ -527,8 +527,7 @@ class SongInfo:
             # Otherwise, display the song info
             grid.add_row(
                 "[b]Title",
-                # The title is a string, so we need to process it to remove the newline character
-                SONG.title[:-1]
+                SONG.title
             )
             grid.add_row(
                 "[b]BPM",

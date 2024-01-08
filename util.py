@@ -14,33 +14,42 @@ def interpolate(x1: float, x2: float, y1: float, y2: float, x: float):
     return ((y2 - y1) * x + x2 * y1 - x1 * y2) / (x2 - x1)
 
 
-def frequency_from_note(note: str):
+# A map of notes to their frequencies in the 4th octave
+notes = {
+    "C": 261.63,
+    "C#": 277.18,
+    "D": 293.66,
+    "D#": 311.13,
+    "E": 329.63,
+    "F": 349.23,
+    "F#": 369.99,
+    "G": 392.00,
+    "G#": 415.30,
+    "A": 440.00,
+    "A#": 466.16,
+    "B": 493.88
+}
+
+
+def frequency_from_note(note_octave: str):
     """
     Returns the frequency of the given note
-    :param note: A string representing the note in the format <note><octave>
+    :param note_octave: A string representing the note in the format <note><octave>
     :return: A float of the frequency of the note
     """
-    # Interpret the octave
-    # TODO: Add support for negative octaves and double digit octaves
-    # (currently only supports 0-9, which is 99% of music tbh)
-    octave = int(note[-1])
     # Read the note
-    note = note[:-1]
-    # A map of notes to their frequencies in the 4th octave
-    notes = {
-        "C": 261.63,
-        "C#": 277.18,
-        "D": 293.66,
-        "D#": 311.13,
-        "E": 329.63,
-        "F": 349.23,
-        "F#": 369.99,
-        "G": 392.00,
-        "G#": 415.30,
-        "A": 440.00,
-        "A#": 466.16,
-        "B": 493.88
-    }
+    note = ""
+    for char in note_octave:
+        if char.isdigit():
+            # Notes most definitely do not contain digits, so if we encounter one, we have reached the octave
+            break
+        else:
+            note += char
+    if note not in notes:
+        # If the note is not in the map, raise an exception
+        raise Exception("Invalid note: " + note)
+    # Interpret the octave
+    octave = int(note_octave[len(note):])
     # Return the frequency of the note based on the octave
     return notes[note] * (2 ** (octave - 4))
 

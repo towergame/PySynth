@@ -296,6 +296,11 @@ def signal_handler(sig: int, frame: FrameType):
     """
     # Restore input echo in the terminal
     os.system("stty echo")
+    if SONG is not None:
+        # If a song is loaded, stop it
+        SONG.stop_playback()
+        # Similarly, kill the thread
+        SONG.kill()
     # Exit gracefully
     sys.exit(0)
 
@@ -684,7 +689,13 @@ else:
             SONG.start_playback()
             while SONG.is_playing():
                 # Wait until the song is finished playing
-                time.sleep(0.1)
+                try:
+                    time.sleep(0.1)
+                except KeyboardInterrupt:
+                    # If the user presses CTRL+C, stop the song
+                    console.print(f"[bold {color}]\[{SONG.title}][/] Interrupting song!")
+                    SONG.stop_playback()
+                    break
             # Kill the song thread
             SONG.kill()
             # After the playback has finished, print a message that playback has finished

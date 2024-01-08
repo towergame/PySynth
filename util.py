@@ -21,3 +21,10 @@ def frequencyFromNote(note: str):
         "B": 493.88
     }
     return notes[note] * (2 ** (octave - 4))
+
+
+def delocalizePath(currPath, path):
+    if path.startswith("/"):
+        return path
+    else:
+        return currPath + "/" + path

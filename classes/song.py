@@ -34,10 +34,16 @@ class Song(threading.Thread):
     def set_wave_preset(self, wave):
         self.waves = wave
 
+    def get_wave_preset(self):
+        return self.waves
+
     def set_envelope_preset(self, envelope):
         self.env = envelope
 
-    def get_status(self):
+    def get_envelope_preset(self):
+        return self.env
+
+    def is_playing(self):
         return self.playing
 
     def play(self):

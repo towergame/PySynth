@@ -5,6 +5,7 @@ from classes.envelope import Envelope
 from classes.wave_generator import WaveGenerator, WaveTypes
 from classes.wave import Wave
 from classes.song import Song
+from config import DEFAULT_ENVELOPE_PRESET, DEFAULT_WAVE_PRESET
 from util import frequency_from_note
 from rich.console import Console
 from rich.live import Live
@@ -62,37 +63,66 @@ SONG: Song | None = None
 load_song_key = Key.f3
 play_song_key = Key.f4
 
-
+ERROR = ""
 def on_load_wave():
-    global WAVE_PRESET
-    WAVE_PRESET = load_wave_preset(get_path("*.wave.pysynth"))
+    global WAVE_PRESET, ERROR
+    ERROR = ""
+    try:
+        WAVE_PRESET = load_wave_preset(get_path("*.wave.pysynth"))
+    except Exception as e:
+        ERROR = "Failed to Read Wave Preset"
 
 
 def on_load_envelope():
-    global ENVELOPE_PRESET
-    ENVELOPE_PRESET = load_wave_preset(get_path("*.envelope.pysynth"))
+    global ENVELOPE_PRESET, ERROR
+    ERROR = ""
+    try:
+        ENVELOPE_PRESET = load_wave_preset(get_path("*.envelope.pysynth"))
+    except Exception as e:
+        ERROR = "Failed to Read Envelope"
 
 
 def on_load_song():
-    global SONG
-    SONG = load_song(get_path("*.song.pysynth"))
+    global SONG, ENVELOPE_PRESET, WAVE_PRESET, ERROR
+    ERROR = ""
+    try:
+        SONG = load_song(get_path("*.song.pysynth"))
+    except Exception as e:
+        ERROR = "Failed to Read Song"
+        return
     SONG.start()
+
+    if SONG.get_envelope_preset() == DEFAULT_ENVELOPE_PRESET:
+        SONG.set_envelope_preset(ENVELOPE_PRESET)
+    else:
+        ENVELOPE_PRESET = SONG.get_envelope_preset()
+
+    if SONG.get_wave_preset() == DEFAULT_WAVE_PRESET:
+        SONG.set_wave_preset(WAVE_PRESET)
+    else:
+        WAVE_PRESET = SONG.get_wave_preset()
 
 
 def on_play_song():
-    global SONG
+    global SONG, ERROR
+    if SONG is None:
+        ERROR = "No Song Loaded"
+        return
     SONG.start_playback()
 
 
 def on_stop_song():
     global SONG
+    if SONG is None:
+        raise Exception("Impossible State")
     SONG.stop_playback()
 
 
 def on_press(key):
-    global currentlyPlaying
+    global currentlyPlaying, SONG, ERROR
     # print('Key: ', key, ' was held')
     if key in noteKeys:
+        ERROR = ""
         if key not in currentlyPlaying:
             pass
         if currentlyPlaying[key] is not None and currentlyPlaying[key].is_alive():
@@ -114,7 +144,13 @@ def on_press(key):
     elif key == load_song_key:
         on_load_song()
     elif key == play_song_key:
-        on_play_song()
+        if SONG is None:
+            ERROR = "No Song Loaded"
+            return
+        if not SONG.is_playing():
+            on_play_song()
+        else:
+            on_stop_song()
 
 
 def on_release(key):
@@ -137,13 +173,15 @@ def signal_handler(sig, frame):
 class Header:
     def __rich__(self) -> Panel:
         grid = Table.grid(expand=True)
+        grid.add_column(justify="left")
         grid.add_column(justify="center", ratio=1)
         grid.add_column(justify="right")
         grid.add_row(
             "[b]PySynth[/b]",
+            ERROR,
             datetime.now().ctime().replace(":", "[blink]:[/]"),
         )
-        return Panel(grid, style="white on magenta")
+        return Panel(grid, style=("white on magenta" if ERROR == "" else "white on red"))
 
 
 class NoteInfo:
@@ -240,11 +278,12 @@ class ControlsInfo:
         )
         grid.add_row(
             "F4",
-            "Play Song"
+            "Play Song" if SONG is None or not SONG.is_playing() else "Stop Song"
         )
+        grid.add_row()
         grid.add_row(
             "F12",
-            "Exit"
+            "Exit",
         )
         return Panel(grid)
 
@@ -264,10 +303,6 @@ class SongInfo:
             grid.add_row(
                 "Title",
                 SONG.title[:-1]
-            )
-            grid.add_row(
-                "Length",
-                str(round(len(SONG.beats) / SONG.bpm * 60 * 100) / 100) + "s"
             )
             grid.add_row(
                 "BPM",

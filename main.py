@@ -20,7 +20,6 @@ from datetime import datetime
 import signal
 import sys
 from file_processing import load_wave_preset, load_envelope_preset, load_song
-import wx
 
 
 def get_path(wildcard):
@@ -649,6 +648,14 @@ else:
             # Check if the program is running in a tty
             if not sys.stdin.isatty():
                 console.print("Interactive mode requires a tty")
+                break
+            # Check if the environment supports wxPython
+            try:
+                # I think this theoretically should prevent interactive mode from running if the system does not
+                # support wxPython
+                import wx
+            except ImportError:
+                console.print("Interactive mode requires wxPython")
                 break
             interactive = True
             interactive_mode()

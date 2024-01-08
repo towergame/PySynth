@@ -670,6 +670,7 @@ else:
                 WAVE_PRESET = load_wave_preset(arguments[i + 1])
             except Exception as e:
                 console.print("Failed to load wave preset")
+                console.print(e)
                 break
         elif arguments[i] in ["-e", "--envelope"]:
             # If the argument is -e or --envelope, load the envelope preset
@@ -677,6 +678,7 @@ else:
                 ENVELOPE_PRESET = load_envelope_preset(arguments[i + 1])
             except Exception as e:
                 console.print("Failed to load envelope preset")
+                console.print(e)
                 break
         elif arguments[i] in ["-s", "--song"]:
             # If the argument is -s or --song, load the song
@@ -685,6 +687,7 @@ else:
                 SONG.start()
             except Exception as e:
                 console.print("Failed to load song")
+                console.print(e)
                 break
     if not interactive:
         if SONG is not None:

@@ -77,7 +77,7 @@ def on_load_envelope():
     global ENVELOPE_PRESET, ERROR
     ERROR = ""
     try:
-        ENVELOPE_PRESET = load_wave_preset(get_path("*.envelope.pysynth"))
+        ENVELOPE_PRESET = load_envelope_preset(get_path("*.envelope.pysynth"))
     except Exception as e:
         ERROR = "Failed to Read Envelope"
 

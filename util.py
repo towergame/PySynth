@@ -3,7 +3,7 @@ def interpolate(x1: float, x2: float, y1: float, y2: float, x: float):
     return ((y2 - y1) * x + x2 * y1 - x1 * y2) / (x2 - x1)
 
 
-def frequencyFromNote(note: str):
+def frequency_from_note(note: str):
     octave = int(note[-1])
     note = note[:-1]
     notes = {
@@ -23,8 +23,19 @@ def frequencyFromNote(note: str):
     return notes[note] * (2 ** (octave - 4))
 
 
-def delocalizePath(currPath, path):
+def delocalize_path(current_path, path):
     if path.startswith("/"):
         return path
     else:
-        return currPath + "/" + path
+        return current_path + "/" + path
+
+
+def get_beat_length(beat: [str, float]):
+    if beat[0][0] == "0":
+        return float(beat[0][1:])
+    else:
+        shortest = float("inf")
+        for note in beat:
+            if float(note[1]) < shortest:
+                shortest = float(note[1])
+        return shortest

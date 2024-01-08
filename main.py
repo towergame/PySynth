@@ -4,7 +4,8 @@ from classes.sound_generator import SoundGenerator
 from classes.envelope import Envelope
 from classes.wave_generator import WaveGenerator, WaveTypes
 from classes.wave import Wave
-from util import frequencyFromNote
+from classes.song import Song
+from util import frequency_from_note
 from rich.console import Console
 from rich.live import Live
 from rich.layout import Layout
@@ -16,6 +17,7 @@ import sys
 from file_processing import load_wave_preset, load_envelope_preset, load_song
 import wx
 
+
 def get_path(wildcard):
     app = wx.App(None)
     style = wx.FD_OPEN | wx.FD_FILE_MUST_EXIST
@@ -26,6 +28,7 @@ def get_path(wildcard):
         path = None
     dialog.Destroy()
     return path
+
 
 noteKeys = {
     KeyCode(char='a'): "C4",
@@ -43,40 +46,48 @@ noteKeys = {
     KeyCode(char='k'): "C5"
 }
 
-currentlyPlaying = {}
+currentlyPlaying: dict[KeyCode, SoundGenerator | None] = {}
 for k, v in noteKeys.items():
     currentlyPlaying[k] = None
 
 exit_key = Key.f12
 
-WAVE_PRESET = [Wave(WaveTypes.SINE, 1, 1, 0),
-              Wave(WaveTypes.SINE, 0.5, 0.5, 2)]
+WAVE_PRESET: [Wave] = [Wave(WaveTypes.SINE, 1, 1, 0),
+                       Wave(WaveTypes.SINE, 0.5, 0.5, 2)]
 load_wave_key = Key.f1
-ENVELOPE_PRESET = Envelope(0.1, 0.1, 0.4, 0.25)
+ENVELOPE_PRESET: Envelope = Envelope(0.1, 0.1, 0.4, 0.25)
 load_envelope_key = Key.f2
 
-SONG = None
+SONG: Song | None = None
 load_song_key = Key.f3
 play_song_key = Key.f4
+
 
 def on_load_wave():
     global WAVE_PRESET
     WAVE_PRESET = load_wave_preset(get_path("*.wave.pysynth"))
 
+
 def on_load_envelope():
     global ENVELOPE_PRESET
     ENVELOPE_PRESET = load_wave_preset(get_path("*.envelope.pysynth"))
 
+
 def on_load_song():
-    global SONG, songlen
+    global SONG
     SONG = load_song(get_path("*.song.pysynth"))
-    songlen = 0
-    for b in SONG.beats:
-        songlen += 1
+    SONG.start()
+
 
 def on_play_song():
     global SONG
-    SONG.play()
+    SONG.start_playback()
+
+
+def on_stop_song():
+    global SONG
+    SONG.stop_playback()
+
 
 def on_press(key):
     global currentlyPlaying
@@ -91,7 +102,8 @@ def on_press(key):
             if currentlyPlaying[key] is not None:
                 currentlyPlaying[key].stop()
                 currentlyPlaying[key] = None
-            currentlyPlaying[key] = SoundGenerator(ENVELOPE_PRESET, WaveGenerator(WAVE_PRESET, frequencyFromNote(noteKeys[key])))
+            currentlyPlaying[key] = SoundGenerator(ENVELOPE_PRESET,
+                                                   WaveGenerator(WAVE_PRESET, frequency_from_note(noteKeys[key])))
             currentlyPlaying[key].start()
     elif key == exit_key:
         listener.stop()
@@ -116,6 +128,7 @@ def on_release(key):
             currentlyPlaying[key].stop()
             currentlyPlaying[key] = None
 
+
 def signal_handler(sig, frame):
     os.system("stty echo")
     sys.exit(0)
@@ -131,6 +144,7 @@ class Header:
             datetime.now().ctime().replace(":", "[blink]:[/]"),
         )
         return Panel(grid, style="white on magenta")
+
 
 class NoteInfo:
     def __rich__(self) -> Panel:
@@ -149,6 +163,7 @@ class NoteInfo:
                 style="black on purple" if v is not None else ""
             )
         return Panel(grid)
+
 
 class EnvelopeInfo:
     def __rich__(self) -> Panel:
@@ -178,6 +193,7 @@ class EnvelopeInfo:
         )
         return Panel(grid)
 
+
 class WaveInfo:
     def __rich__(self) -> Panel:
         grid = Table.grid(expand=True)
@@ -198,6 +214,7 @@ class WaveInfo:
                 str(wave.phase)
             )
         return Panel(grid)
+
 
 class ControlsInfo:
     def __rich__(self) -> Panel:
@@ -234,29 +251,30 @@ class ControlsInfo:
 
 class SongInfo:
     def __rich__(self) -> Panel:
-            grid = Table.grid(expand=True)
-            grid.title = "Song"
-            grid.add_column()
-            grid.add_column()
-            if SONG is None:
-                grid.add_row(
-                    "No Song Loaded",
-                    ""
-                )
-            else:
-                grid.add_row(
-                    "Title",
-                    SONG.title[:-1]
-                )
-                grid.add_row(
-                    "Length",
-                    str(round(len(SONG.beats) / SONG.bpm * 60 * 100) / 100) + "s"
-                )
-                grid.add_row(
-                    "BPM",
-                    str(SONG.bpm)
-                )
-            return Panel(grid)
+        grid = Table.grid(expand=True)
+        grid.title = "Song"
+        grid.add_column()
+        grid.add_column()
+        if SONG is None:
+            grid.add_row(
+                "No Song Loaded",
+                ""
+            )
+        else:
+            grid.add_row(
+                "Title",
+                SONG.title[:-1]
+            )
+            grid.add_row(
+                "Length",
+                str(round(len(SONG.beats) / SONG.bpm * 60 * 100) / 100) + "s"
+            )
+            grid.add_row(
+                "BPM",
+                str(SONG.bpm)
+            )
+        return Panel(grid)
+
 
 def generate_interface() -> Layout:
     layout = Layout()
@@ -286,15 +304,17 @@ def generate_interface() -> Layout:
 signal.signal(signal.SIGINT, signal_handler)
 os.system("stty -echo")
 
-layout = generate_interface()
-layout["header"].update(Header())
-layout["notes"].update(NoteInfo())
-layout["envelope"].update(EnvelopeInfo())
-layout["controls"].update(ControlsInfo())
-layout["wave"].update(WaveInfo())
-layout["song"].update(SongInfo())
+interface = generate_interface()
+interface["header"].update(Header())
+interface["notes"].update(NoteInfo())
+interface["envelope"].update(EnvelopeInfo())
+interface["controls"].update(ControlsInfo())
+interface["wave"].update(WaveInfo())
+interface["song"].update(SongInfo())
 
 with Listener(on_press=on_press, on_release=on_release) as listener:
-    with Live(layout, screen=True, refresh_per_second=4) as live:
-        live.update(layout)
+    with Live(interface, screen=True, refresh_per_second=4) as live:
+        live.update(interface)
         listener.join()
+
+os.system("stty echo")

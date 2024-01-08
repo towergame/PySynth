@@ -2,7 +2,7 @@ from classes.wave import Wave
 from classes.wave_generator import WaveTypes, WaveGenerator
 from classes.envelope import Envelope
 from classes.song import Song
-from util import delocalizePath
+from util import delocalize_path
 
 # Load Wave Preset
 WAVE_TYPE_MAP = {
@@ -66,9 +66,9 @@ def load_song(path) -> Song:
                         if tokens[0] == "1":
                             bpm = int(tokens[1])
                         elif tokens[0] == "2":
-                            waves = load_wave_preset(delocalizePath(path, tokens[1]))
+                            waves = load_wave_preset(delocalize_path(path, tokens[1]))
                         elif tokens[0] == "3":
-                            envelope = load_envelope_preset(delocalizePath(path, tokens[1]))
+                            envelope = load_envelope_preset(delocalize_path(path, tokens[1]))
                         else:
                             raise Exception("Invalid Meta Type")
                 else:
@@ -77,5 +77,7 @@ def load_song(path) -> Song:
                     if tokens[0] != "0":
                         for note in tokens[1:]:
                             beat.append([note.split(":")[0], float(note.split(":")[1])])
+                    else:
+                        beat.append(["0", float(tokens[1])])
                     beats.append(beat)
         return Song(title, beats, bpm, waves, envelope)

@@ -3,7 +3,7 @@ import numpy as np
 import soundcard as sc
 
 from classes.wave_generator import WaveGenerator, WaveTypes
-from config import BITRATE, BUFFSIZE, MAX_VOL
+from config import BITRATE, BUFFER_SIZE, MAX_VOL
 from util import interpolate
 
 
@@ -14,7 +14,7 @@ class SoundGenerator(threading.Thread):
         self.length = length
         self.volume = 0  # range [0.0, 1.0]
         self.fs = BITRATE  # sampling rate, Hz, must be integer
-        self.block_size = BUFFSIZE
+        self.block_size = BUFFER_SIZE
         self.t = 0.0
         self.duration = self.block_size / self.fs  # in seconds, may be float
         self.dead = False

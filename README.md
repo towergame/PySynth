@@ -7,9 +7,9 @@ The formats are as such:
 - '.wave.psynth' - A file that specifies a specific waveform. Each line details a wave:  
   - The first token is the waveform type:  
     - '1' - Sine wave
-    - '2' - Triangle wave
-    - '3' - Square wave
-    - '4' - Sawtooth wave 
+    - '2' - Square wave
+    - '3' - Sawtooth wave
+    - '4' - Triangle wave 
   - The second token is the offset of the wave frequency (multiplication factor)
   - The third token is the amplitude of the wave
   - The fourth token is the phase of the wave

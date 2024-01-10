@@ -107,15 +107,17 @@ def load_song(path: str) -> Song:
                     else:
                         # Otherwise, interpret which metadata we are reading
                         tokens = line.split(" ")
+                        # Get the directory
+                        directory_path = "/".join(path.split("/")[:-1])
                         # Type 1 indicates that the line defines BPM
                         if tokens[0] == "1":
                             bpm = int(tokens[1])
                         # Type 2 indicates that the line defines the wave preset which should be used
                         elif tokens[0] == "2":
-                            waves = load_wave_preset(delocalize_path(path, tokens[1]))
+                            waves = load_wave_preset(delocalize_path(directory_path, tokens[1].strip('\n')))
                         # Type 3 indicates that the line defines the envelope preset which should be used
                         elif tokens[0] == "3":
-                            envelope = load_envelope_preset(delocalize_path(path, tokens[1]))
+                            envelope = load_envelope_preset(delocalize_path(directory_path, tokens[1].strip('\n')))
                         else:
                             # If the type is not recognized, raise an exception
                             raise Exception("Invalid Meta Type")
@@ -127,7 +129,7 @@ def load_song(path: str) -> Song:
                     if tokens[0] != "0":
                         if len(tokens) - 1 != int(tokens[0]):
                             # If the number of notes does not match the number of notes specified, raise an exception
-                            raise Exception("Invalid Beat Format")
+                            raise Exception("Invalid Beat Format at line " + str(len(beats) + 1))
                         for note in tokens[1:]:
                             # Parse each note into a tuple of (note, duration)
                             beat.append([note.split(":")[0], float(note.split(":")[1])])

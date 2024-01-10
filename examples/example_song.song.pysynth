@@ -2,6 +2,8 @@ Take On Me
 $ Example of a song transcribed into the pysynth format
 $ Transcribed from: https://musescore.com/user/94521/scores/4097211
 1 169
+2 ./lead.wave.pysynth
+3 ./lead_envelope.envelope.pysynth
 ---
 1 D4:0.5
 1 D4:0.5

@@ -98,6 +98,7 @@ class SoundGenerator(threading.Thread):
                 # Generate the waveform for the current block
                 samples = self.waveGenerator.generate_wave(
                     np.arange(self.t, self.t + self.duration, 1 / self.fs)).astype(np.float32)
+                # TODO: Add support for sound filtering
                 # Increment time
                 self.t += self.duration
                 # Play the waveform

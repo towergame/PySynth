@@ -129,7 +129,7 @@ def load_song(path: str) -> Song:
                     if tokens[0] != "0":
                         if len(tokens) - 1 != int(tokens[0]):
                             # If the number of notes does not match the number of notes specified, raise an exception
-                            raise Exception("Invalid Beat Format at line " + str(len(beats) + 1))
+                            raise Exception("Invalid Beat Format at beat " + str(len(beats) + 1))
                         for note in tokens[1:]:
                             # Parse each note into a tuple of (note, duration)
                             beat.append([note.split(":")[0], float(note.split(":")[1])])
